@@ -2,20 +2,19 @@ import streamlit as st
 import pandas as pd
 
 class Person:
-    def __init__(self, name, email, password, person_type, parent=None):
+    def __init__(self, name, email, person_type, parent=None):
         self.name = name
         self.email = email
-        self.password = password
         self.person_type = person_type
         self.parent = parent
 
-def register_person(name, email, password, person_type, parent=None):
+def register_person(name, email, person_type, parent=None):
     data_key = f"{person_type}_data"
 
     if data_key not in st.session_state:
-        st.session_state[data_key] = pd.DataFrame(columns=["Name", "Email", "Password", "Parent"])
+        st.session_state[data_key] = pd.DataFrame(columns=["Name", "Email", "Parent"])
 
-    new_data = pd.DataFrame({"Name": [name], "Email": [email], "Password": [password], "Parent": [parent]})
+    new_data = pd.DataFrame({"Name": [name], "Email": [email], "Parent": [parent]})
     st.session_state[data_key] = pd.concat([st.session_state[data_key], new_data], ignore_index=True)
 
 def edit_person(name, person_type):
@@ -29,9 +28,6 @@ def edit_person(name, person_type):
         st.session_state[data_key].at[index, 'Name'] = st.text_input(f"Edit {person_type}'s name:", value=selected_person)
         st.session_state[data_key].at[index, 'Email'] = st.text_input(f"Edit {person_type}'s email:",
                                                                      value=st.session_state[data_key].at[index, 'Email'])
-        st.session_state[data_key].at[index, 'Password'] = st.text_input(f"Edit {person_type}'s password:",
-                                                                         type="password",
-                                                                         value=st.session_state[data_key].at[index, 'Password'])
 
         if person_type == 'child':
             fathers = st.session_state.father_data['Name'].tolist()
@@ -52,8 +48,6 @@ def prefill_registration_form(person_type, name):
         with st.form(form_key):
             st.text_input(f"Enter {person_type}'s name:", value=person_row['Name'], key=f"{form_key}_name")
             st.text_input(f"Enter {person_type}'s email:", value=person_row['Email'], key=f"{form_key}_email")
-            st.text_input(f"Enter {person_type}'s password:", type="password", value=person_row['Password'],
-                          key=f"{form_key}_password")
 
             if person_type == 'child':
                 fathers = st.session_state.father_data['Name'].tolist()
@@ -79,7 +73,6 @@ def update_person_data(person_type, name, key_prefix):
 
         person_data.at[index, 'Name'] = st.session_state[key_prefix + f"_name"]
         person_data.at[index, 'Email'] = st.session_state[key_prefix + f"_email"]
-        person_data.at[index, 'Password'] = st.session_state[key_prefix + f"_password"]
 
         if person_type == 'child':
             person_data.at[index, 'Parent'] = st.session_state[key_prefix + f"_parent"]
@@ -91,7 +84,6 @@ def display_person_registration_form(person_type):
     with st.form(f"{person_type}_registration_form"):
         name = st.text_input(f"Enter {person_type}'s name:")
         email = st.text_input(f"Enter {person_type}'s email:")
-        password = st.text_input(f"Enter {person_type}'s password:", type="password")
 
         if person_type == 'child':
             fathers = st.session_state.father_data['Name'].tolist()
@@ -102,7 +94,7 @@ def display_person_registration_form(person_type):
         submit_button = st.form_submit_button(f"Register {person_type.capitalize()}")
 
     if submit_button:
-        register_person(name, email, password, person_type, selected_father)
+        register_person(name, email, person_type, selected_father)
         st.success(f"{person_type.capitalize()} Registered Successfully")
 
 def display_person_table(person_type):
@@ -111,7 +103,7 @@ def display_person_table(person_type):
 
     if not st.session_state[data_key].empty:
         # Display the table without the 'Edit' column
-        st.dataframe(st.session_state[data_key][['Name', 'Email', 'Password', 'Parent']], height=300)
+        st.dataframe(st.session_state[data_key][['Name', 'Email', 'Parent']], height=300)
 
         # Add a multiselect for selecting persons to edit (excluding fathers for simplicity)
         selected_persons = st.multiselect(f"Select {person_type}s to Edit:",
@@ -130,10 +122,10 @@ def display_person_table(person_type):
 st.title("Father and Child Form")
 
 if 'father_data' not in st.session_state:
-    st.session_state.father_data = pd.DataFrame(columns=["Name", "Email", "Password", "Parent"])
+    st.session_state.father_data = pd.DataFrame(columns=["Name", "Email", "Parent"])
 
 if 'child_data' not in st.session_state:
-    st.session_state.child_data = pd.DataFrame(columns=["Name", "Email", "Password", "Parent"])
+    st.session_state.child_data = pd.DataFrame(columns=["Name", "Email", "Parent"])
 
 selected_form = st.sidebar.radio("Select Form:", ["Father", "Child"])
 

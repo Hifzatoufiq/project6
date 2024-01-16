@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-from streamlit_extras.app_logo import add_logo
 import os
 
 
